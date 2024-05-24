@@ -86,6 +86,7 @@ const Dashboard = ({
       setBalance(balance + orderOpenList[i]?.total);
       setOrderOpenList(cancelArr);
     }
+    handleClickVariant('error','Your order has been cancelled!')
   };
 
   const handleChangeSlider = (_, percentage) => {
