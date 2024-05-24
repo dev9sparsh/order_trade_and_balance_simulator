@@ -7,10 +7,10 @@ import { InputAdornment, TextField } from "@mui/material";
 
 function NavBar({ currentPrice, pair, balance, setBalance }) {
   const [isInputShow, setIsInputShow] = useState(false);
-  const [value, setSetValue] = useState(balance);
+  const [value, setValue] = useState(balance);
 
   useEffect(() => {
-    setSetValue(balance);
+    setValue(balance);
   }, [balance]);
 
   return (
@@ -56,10 +56,8 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
           {isInputShow ? (
             <TextField
               onChange={(e) =>{
-                const value = e.target.value;
-                if (!isNaN(value)) {
-                  setSetValue(value);
-                }}
+                  setValue(e.target.value);
+                }
               }
               value={value}
               size="small"
@@ -94,7 +92,7 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
               <Typography sx={{ fontWeight: 600, color: "#00b746" }}>
                 Balance
               </Typography>{" "}
-              {balance} USD
+              {(typeof balance === 'number')?balance?.toFixed(3):balance} USD
             </Typography>
           )}
         </Toolbar>
