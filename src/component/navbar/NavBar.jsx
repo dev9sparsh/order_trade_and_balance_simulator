@@ -47,7 +47,7 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
             component="a"
             sx={{
               fontWeight: 600,
-              color: "#00000095",
+              color: "#1976d2",
               textDecoration: "none",
             }}
           >
@@ -55,7 +55,12 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
           </Typography>
           {isInputShow ? (
             <TextField
-              onChange={(e) => setSetValue(e.target.value)}
+              onChange={(e) =>{
+                const value = e.target.value;
+                if (!isNaN(value)) {
+                  setSetValue(value);
+                }}
+              }
               value={value}
               size="small"
               required
@@ -64,7 +69,7 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
               defaultValue=""
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position="start">$</InputAdornment>
+                  <InputAdornment position="start">USD</InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment
@@ -86,10 +91,10 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
               onClick={() => setIsInputShow(true)}
               sx={{ display: "flex", gap: "8px", color: "#00000095" }}
             >
-              <Typography sx={{ fontWeight: 600, color: "#00000095" }}>
+              <Typography sx={{ fontWeight: 600, color: "#00b746" }}>
                 Balance
               </Typography>{" "}
-              {balance.toFixed(3)}$
+              {balance} USD
             </Typography>
           )}
         </Toolbar>

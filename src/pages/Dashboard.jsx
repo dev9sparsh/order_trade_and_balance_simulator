@@ -53,7 +53,6 @@ const Dashboard = ({
   const [coinAmounts, setCoinAmounts] = useState({
     "BTC-USD": 0,
     "ETH-BTC": 0,
-    "BTTC-USD": 0,
     "LTC-USD": 0,
     "XRP-USD": 0,
   });
@@ -199,9 +198,9 @@ const Dashboard = ({
         handleClickVariant("success", `You Limit Order is created!`);
       } else {
         setBalance(balance + sellTotal);
-        setSliderValue(0);
-        setBuyTotal(0);
-        setAmountBuy(0);
+        setSliderValueSell(0);
+        setSellTotal(0);
+        setAmountSell(0);
         setCoinAmounts({
           ...coinAmounts,
           [pair]: coinAmounts[pair] - amountSell,
@@ -366,7 +365,7 @@ const Dashboard = ({
                 fontWeight: 600,
                 fontSize: "20px",
                 paddingY: "5px",
-                color: "#383838 ",
+                color: "#1976d2 ",
               }}
             >
               {currentPrice} Current
