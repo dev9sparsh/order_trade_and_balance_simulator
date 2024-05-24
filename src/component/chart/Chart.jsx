@@ -1,19 +1,12 @@
 import { Box, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import { resolutionArr } from "../../utilities/data";
 
 const Chart = ({ pair, setCurrentPrice }) => {
   const [socket, setSocket] = useState(null);
   const [candles, setCandle] = useState([]);
   const [resolution, setResolution] = useState({ resolution: "1m", iso: 50 });
-
-  const resolutionArr = [
-    { resolution: "1m", iso: 50 },
-    { resolution: "5m", iso: 250 },
-    { resolution: "15m", iso: 750 },
-    { resolution: "1h", iso: 3000 },
-    { resolution: "1d", iso: 72000 },
-  ];
 
   // eslint-disable-next-line
   useEffect(() => {

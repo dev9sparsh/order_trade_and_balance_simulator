@@ -32,7 +32,6 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
             sx={{
               fontFamily: "monospace",
               fontWeight: 700,
@@ -43,18 +42,16 @@ function NavBar({ currentPrice, pair, balance, setBalance }) {
             {pair?.split("-")?.[0]}/{pair?.split("-")?.[1]} {currentPrice}
           </Typography>
           <Typography
-            variant="h5"
+            variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
             sx={{
-              fontFamily: "monospace",
-              fontWeight: 700,
-              color: "#1976d2",
+              fontWeight: 600,
+              color: "#00000095",
               textDecoration: "none",
             }}
           >
-            Demo
+            Order Trade & Balance Simulator
           </Typography>
           {isInputShow ? (
             <TextField

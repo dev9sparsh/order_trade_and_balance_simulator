@@ -22,78 +22,82 @@ import {
   Titlethird,
   Wrapper,
 } from "../Style";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import { useEffect, useState } from "react";
 import Chart from "../component/chart/Chart";
-import {useSnackbar } from 'notistack';
+import { useSnackbar } from "notistack";
 import OrderBookTable from "../component/common/OrderBookTable";
-import { pairArray } from "../utilities/data";
+import { pairArray, tableHeading } from "../utilities/data";
+import HistoryTable from "../component/common/HistoryTable";
 
-const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBalance }) => {
+const Dashboard = ({
+  currentPrice,
+  setCurrentPrice,
+  pair,
+  setPair,
+  balance,
+  setBalance,
+}) => {
   const [bidAsk, setBidAsk] = useState([]);
   const [socket, setSocket] = useState(null);
   const [sliderValue, setSliderValue] = useState(0);
   const [buyTotal, setBuyTotal] = useState(0);
   const [amountBuy, setAmountBuy] = useState(0);
-  const [orderOpenList, setOrderOpenList] = useState([])
+  const [orderOpenList, setOrderOpenList] = useState([]);
   const [priceBuy, setPriceBuy] = useState(currentPrice);
-  const [selectTab,setSelectTab] = useState(0)
+  const [selectTab, setSelectTab] = useState(0);
   const [priceSell, setPriceSell] = useState(currentPrice);
   const [amountSell, setAmountSell] = useState(0);
   const [sliderValueSell, setSliderValueSell] = useState(0);
   const [sellTotal, setSellTotal] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
+  const [coinAmounts, setCoinAmounts] = useState({
+    "BTC-USD": 0,
+    "ETH-BTC": 0,
+    "BTTC-USD": 0,
+    "LTC-USD": 0,
+    "XRP-USD": 0,
+  });
 
-  const handleClickVariant = (variant,msg) => {
+  const handleClickVariant = (variant, msg) => {
     enqueueSnackbar(msg, { variant });
   };
-  const [coinAmounts , setCoinAmounts] = useState({
-    "BTC-USD":0,
-    "ETH-BTC":0,
-    "BTTC-USD":0,
-    "LTC-USD":0,
-    "XRP-USD":0,
-  })
-  
 
   const handleChange = (event) => {
     setPair(event.target.value);
   };
 
-  const handleCancle = (id,i)=>{
-   if(id?.includes('_ask_id')){
-    const cancelArrAsk = orderOpenList?.map((item)=>{
-      return item.id ===id? {...item ,status : "Cancelled", action:false} : {...item}
-    })
-    setCoinAmounts({
-      ...coinAmounts,
-      [pair]:coinAmounts[pair]+orderOpenList[i]?.amount
-    })
-    setOrderOpenList(cancelArrAsk)
-   }else{
-    const cancelArr = orderOpenList?.map((item)=>{
-      return item.id ===id? {...item ,status : "Cancelled", action:false} : {...item}
-    })
-    setBalance(balance+orderOpenList[i]?.total)
-    setOrderOpenList(cancelArr)
-   }
-  }
+  const handleCancle = (id, i) => {
+    if (id?.includes("_ask_id")) {
+      const cancelArrAsk = orderOpenList?.map((item) => {
+        return item.id === id
+          ? { ...item, status: "Cancelled", action: false }
+          : { ...item };
+      });
+      setCoinAmounts({
+        ...coinAmounts,
+        [pair]: coinAmounts[pair] + orderOpenList[i]?.amount,
+      });
+      setOrderOpenList(cancelArrAsk);
+    } else {
+      const cancelArr = orderOpenList?.map((item) => {
+        return item.id === id
+          ? { ...item, status: "Cancelled", action: false }
+          : { ...item };
+      });
+      setBalance(balance + orderOpenList[i]?.total);
+      setOrderOpenList(cancelArr);
+    }
+  };
 
   const handleChangeSlider = (_, percentage) => {
     setSliderValue(percentage);
-    setBuyTotal( balance * (percentage / 100));
+    setBuyTotal(balance * (percentage / 100));
     setAmountBuy((percentage * balance) / 100 / priceBuy);
   };
   const handleChangeSliderSell = (_, percentage) => {
     setSliderValueSell(percentage);
-    setSellTotal(priceSell*percentage *coinAmounts[pair] / 100);
-    setAmountSell(  coinAmounts[pair] *(percentage/ 100));
+    setSellTotal((priceSell * percentage * coinAmounts[pair]) / 100);
+    setAmountSell(coinAmounts[pair] * (percentage / 100));
   };
   const handlerPriceBuy = (e) => {
     setPriceBuy(e.target.value);
@@ -105,13 +109,12 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
   const handlerAmountBuy = (e) => {
     setAmountBuy(e.target.value);
     setBuyTotal(priceBuy * e.target.value);
-    setSliderValue(priceBuy*e.target.value*100/balance)
-
+    setSliderValue((priceBuy * e.target.value * 100) / balance);
   };
   const handlerAmountSell = (e) => {
     setAmountSell(e.target.value);
     setSellTotal(priceBuy * e.target.value);
-    setSliderValueSell(e.target.value*100/coinAmounts[pair])
+    setSliderValueSell((e.target.value * 100) / coinAmounts[pair]);
   };
 
   const handleChangeBuyTotal = (event) => {
@@ -130,9 +133,8 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
   };
 
   const currentDate = new Date();
-
   const year = currentDate.getFullYear();
-  const month = currentDate.getMonth() + 1; 
+  const month = currentDate.getMonth() + 1;
   const day = currentDate.getDate();
   const hours = currentDate.getHours();
   const minutes = currentDate.getMinutes();
@@ -140,57 +142,75 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
   const formattedTime = `${hours}:${minutes}`;
   const fullDateTime = `${formattedDate} ${formattedTime}`;
 
-  const buyHandlerBtn = (btnChecker)=>{
-    setOrderOpenList([...orderOpenList,{
-      id:btnChecker==='buy'?`${Date.now()}_bid_id`:`${Date.now()}_ask_id`,
-      date: fullDateTime,
-      pair,
-      side:btnChecker==='buy'?'Buy':'Sell',
-      type:selectTab===1?"Market":"Limit",
-      amount:btnChecker==='buy'? amountBuy : amountSell,
-      price:btnChecker==='buy'? selectTab===1?currentPrice:priceBuy :selectTab===1?currentPrice:priceSell,
-      total:btnChecker==='buy'? buyTotal: sellTotal,
-      status:selectTab===1?"Success":"Pending",
-      action:selectTab===1?false:true
-    }])
-    if(btnChecker==='buy'){
-      if (selectTab===0) {
-      setBalance(balance-buyTotal)
-      setSliderValue(0)
-      setBuyTotal(0)
-      setAmountBuy(0)
-      handleClickVariant('success',`You Limit Order is created!`)
+  const buyHandlerBtn = (btnChecker) => {
+    setOrderOpenList([
+      ...orderOpenList,
+      {
+        id:
+          btnChecker === "buy"
+            ? `${Date.now()}_bid_id`
+            : `${Date.now()}_ask_id`,
+        date: fullDateTime,
+        pair,
+        side: btnChecker === "buy" ? "Buy" : "Sell",
+        type: selectTab === 1 ? "Market" : "Limit",
+        amount: btnChecker === "buy" ? amountBuy : amountSell,
+        price:
+          btnChecker === "buy"
+            ? selectTab === 1
+              ? currentPrice
+              : priceBuy
+            : selectTab === 1
+            ? currentPrice
+            : priceSell,
+        total: btnChecker === "buy" ? buyTotal : sellTotal,
+        status: selectTab === 1 ? "Success" : "Pending",
+        action: selectTab === 1 ? false : true,
+      },
+    ]);
+    if (btnChecker === "buy") {
+      if (selectTab === 0) {
+        setBalance(balance - buyTotal);
+        setSliderValue(0);
+        setBuyTotal(0);
+        setAmountBuy(0);
+        handleClickVariant("success", `You Limit Order is created!`);
+      } else {
+        setBalance(balance - buyTotal);
+        setSliderValue(0);
+        setBuyTotal(0);
+        setAmountBuy(0);
 
-      }else{
-        setBalance(balance-buyTotal)
-        setSliderValue(0)
-        setBuyTotal(0)
-        setAmountBuy(0)
-
-      setCoinAmounts({...coinAmounts,
-        [pair]:coinAmounts[pair]+amountBuy})
-      handleClickVariant('success',`Your market order is successful!`)
-
+        setCoinAmounts({
+          ...coinAmounts,
+          [pair]: coinAmounts[pair] + amountBuy,
+        });
+        handleClickVariant("success", `Your market order is successful!`);
       }
-    }else{
-      if (selectTab===0) {
-        setSliderValueSell(0)
-        setSellTotal(0)
-        setAmountSell(0)
-        setCoinAmounts({...coinAmounts,[pair]:coinAmounts[pair]-amountSell})
-        handleClickVariant('success',`You Limit Order is created!`)
-
-        }else{
-          setBalance(balance+sellTotal)
-          setSliderValue(0)
-          setBuyTotal(0)
-          setAmountBuy(0)
-          setCoinAmounts({...coinAmounts,[pair]:coinAmounts[pair]-amountSell})
-          handleClickVariant('success',`Your market order is successful!`)
-        }
+    } else {
+      if (selectTab === 0) {
+        setSliderValueSell(0);
+        setSellTotal(0);
+        setAmountSell(0);
+        setCoinAmounts({
+          ...coinAmounts,
+          [pair]: coinAmounts[pair] - amountSell,
+        });
+        handleClickVariant("success", `You Limit Order is created!`);
+      } else {
+        setBalance(balance + sellTotal);
+        setSliderValue(0);
+        setBuyTotal(0);
+        setAmountBuy(0);
+        setCoinAmounts({
+          ...coinAmounts,
+          [pair]: coinAmounts[pair] - amountSell,
+        });
+        handleClickVariant("success", `Your market order is successful!`);
       }
     }
- // eslint-disable-next-line
+  };
+  // eslint-disable-next-line
   useEffect(() => {
     let pingInterval;
     const connectWebSocket = () => {
@@ -239,37 +259,62 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
   }, [pair]);
 
   // eslint-disable-next-line
-   useEffect(()=>{
-        // setBalance(balance+buyTotal)
+  useEffect(() => {
+    // setBalance(balance+buyTotal)
 
-    const updatedList = orderOpenList?.map((item)=>{
-      if (item.price >= currentPrice && item.side === 'Buy' && item.type === 'Limit' && item.status === 'Pending' && item.pair===pair){
-        setCoinAmounts({...coinAmounts,[pair]:coinAmounts[pair]+(item?.total/currentPrice)})
-        handleClickVariant('success',`Limit order for ${item?.pair} for ${item?.total} ${item?.pair.split('-')?.[1]} successful!`)
+    const updatedList = orderOpenList?.map((item) => {
+      if (
+        item.price >= currentPrice &&
+        item.side === "Buy" &&
+        item.type === "Limit" &&
+        item.status === "Pending" &&
+        item.pair === pair
+      ) {
+        setCoinAmounts({
+          ...coinAmounts,
+          [pair]: coinAmounts[pair] + item?.total / currentPrice,
+        });
+        handleClickVariant(
+          "success",
+          `Limit order for ${item?.pair} for ${item?.total} ${
+            item?.pair.split("-")?.[1]
+          } successful!`
+        );
         return {
           ...item,
-          price:currentPrice,
-          amount:item?.total/currentPrice,
-          status:"Success",
-          action:false
-        }
-      }else if(item.price <= currentPrice && item.side === 'Sell' && item.type === 'Limit' && item.status === 'Pending' && item.pair===pair){
-        setBalance(balance+currentPrice*item?.amount)
-        handleClickVariant('success',`Limit order for ${item?.pair} for ${item?.total} ${item?.pair.split('-')?.[1]} successful!`)
+          price: currentPrice,
+          amount: item?.total / currentPrice,
+          status: "Success",
+          action: false,
+        };
+      } else if (
+        item.price <= currentPrice &&
+        item.side === "Sell" &&
+        item.type === "Limit" &&
+        item.status === "Pending" &&
+        item.pair === pair
+      ) {
+        setBalance(balance + currentPrice * item?.amount);
+        handleClickVariant(
+          "success",
+          `Limit order for ${item?.pair} for ${item?.total} ${
+            item?.pair.split("-")?.[1]
+          } successful!`
+        );
         return {
           ...item,
-          price:currentPrice,
-          total:currentPrice*item?.amount,
-          status:"Success",
-          action:false
-        }
-      }else{
-        return item
+          price: currentPrice,
+          total: currentPrice * item?.amount,
+          status: "Success",
+          action: false,
+        };
+      } else {
+        return item;
       }
-    })
-    setOrderOpenList(updatedList)
+    });
+    setOrderOpenList(updatedList);
     // eslint-disable-next-line
-  },[currentPrice])
+  }, [currentPrice]);
   return (
     <>
       <Container>
@@ -290,7 +335,11 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
                 label="Pairs"
                 onChange={handleChange}
               >
-                {pairArray?.map((item,i)=><MenuItem key={i} value={item}>{item}</MenuItem>)}
+                {pairArray?.map((item, i) => (
+                  <MenuItem key={i} value={item}>
+                    {item}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>
@@ -310,50 +359,66 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
               Total
             </Titlethird>
           </Box>
-          <OrderBookTable title={'Ask'} data={bidAsk?.asks}/>
-          {currentPrice&&(
+          <OrderBookTable title={"Ask"} data={bidAsk?.asks} />
+          {currentPrice && (
             <Typography
               sx={{
                 fontWeight: 600,
                 fontSize: "20px",
                 paddingY: "5px",
-                color: '#383838 ',
+                color: "#383838 ",
               }}
             >
-                {currentPrice} Current
+              {currentPrice} Current
             </Typography>
           )}
-          <OrderBookTable color={'#00b746'} title={'Bid'} data={bidAsk?.bids}/>
+          <OrderBookTable color={"#00b746"} title={"Bid"} data={bidAsk?.bids} />
         </LeftWrapper>
         <RightWrapper>
           <Chart setCurrentPrice={setCurrentPrice} pair={pair} />
           <Card>
             <Box sx={{ display: "flex", gap: "20px" }}>
-              <Btn onClick={()=>setSelectTab(0)} sx={{ background:`${selectTab===0&&"#e1dcdc"}` }}>Limit</Btn>
-              <Btn onClick={()=>{
-                setSelectTab(1)
-                setPriceBuy(currentPrice)
-                setPriceSell(currentPrice)
-              }} 
-                sx={{ background:`${selectTab===1&&"#e1dcdc"}` }}>Market</Btn>
+              <Btn
+                onClick={() => setSelectTab(0)}
+                sx={{ background: `${selectTab === 0 && "#e1dcdc"}` }}
+              >
+                Limit
+              </Btn>
+              <Btn
+                onClick={() => {
+                  setSelectTab(1);
+                  setPriceBuy(currentPrice);
+                  setPriceSell(currentPrice);
+                }}
+                sx={{ background: `${selectTab === 1 && "#e1dcdc"}` }}
+              >
+                Market
+              </Btn>
             </Box>
-            <Typography gutterBottom sx={{display:'flex', justifyContent:'space-between', fontSize: "12px" }}>
-             Avbl {balance} {pair?.split("-")?.[1]}
-            <Typography sx={{fontSize:'12px'}}>Avbl {coinAmounts[pair]} {pair?.split("-")?.[0]}</Typography>
+            <Typography
+              gutterBottom
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "12px",
+              }}
+            >
+              Avbl {balance} {pair?.split("-")?.[1]}
+              <Typography sx={{ fontSize: "12px" }}>
+                Avbl {coinAmounts[pair]} {pair?.split("-")?.[0]}
+              </Typography>
             </Typography>
-
             <Wrapper>
-              {/* ///////////// ////////////// BUY// // BUY//// BUY//// BUY//// BUY//// BUY//// BUY// */}
               <TextFieldWrapper>
                 <TextField
                   size="small"
                   fullWidth
                   required
-                  value={selectTab===0?priceBuy:"Market"}
+                  value={selectTab === 0 ? priceBuy : "Market"}
                   onChange={(e) => handlerPriceBuy(e)}
                   id="outlined-required"
                   label="Price"
-                  disabled={selectTab===1}
+                  disabled={selectTab === 1}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">Price</InputAdornment>
@@ -366,40 +431,40 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
                     sx: { fontSize: "14px" },
                   }}
                 />
-                {selectTab===0&&<TextField
-                  size="small"
-                  fullWidth
-                  required
-                  value={amountBuy}
-                  onChange={(e) => handlerAmountBuy(e)}
-                  id="outlined-required"
-                  // label="Amount"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">Amount</InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        {pair?.split("-")?.[0]}
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      fontSize: "14px",
-                    },
-                  }}
-                />}
+                {selectTab === 0 && (
+                  <TextField
+                    size="small"
+                    fullWidth
+                    required
+                    value={amountBuy}
+                    onChange={(e) => handlerAmountBuy(e)}
+                    id="outlined-required"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">Amount</InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          {pair?.split("-")?.[0]}
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        fontSize: "14px",
+                      },
+                    }}
+                  />
+                )}
                 <Slider
                   sx={{ color: "black" }}
                   aria-label="Small steps"
-                  value={balance<buyTotal?100:sliderValue}
+                  value={balance < buyTotal ? 100 : sliderValue}
                   onChange={handleChangeSlider}
                   step={20}
                   min={0}
                   max={100}
                   valueLabelDisplay="auto"
-                  disabled={priceBuy<1}
+                  disabled={priceBuy < 1}
                   marks={true}
-
                 />
                 <TextField
                   size="small"
@@ -419,19 +484,24 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
                     sx: { fontSize: "14px" },
                   }}
                 />
-                <BuyButton onClick={()=>buyHandlerBtn('buy')} clr={true} disabled={buyTotal > balance || priceBuy<1 || buyTotal<1 }>Buy</BuyButton>
+                <BuyButton
+                  onClick={() => buyHandlerBtn("buy")}
+                  clr={true}
+                  disabled={buyTotal > balance || priceBuy < 1 || buyTotal < 1}
+                >
+                  Buy
+                </BuyButton>
               </TextFieldWrapper>
-              {/* ///////selllllllllllll//////////fsfsfsfsfsssssssssfffffffff//////////////////////////////////////////////////// */}
               <TextFieldWrapper>
                 <TextField
                   size="small"
                   fullWidth
                   required
-                  value={selectTab===0?priceSell:"Market"}
+                  value={selectTab === 0 ? priceSell : "Market"}
                   onChange={(e) => handlerPriceSell(e)}
                   id="outlined-required"
                   label="Price"
-                  disabled={selectTab===1}
+                  disabled={selectTab === 1}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">Price</InputAdornment>
@@ -444,40 +514,40 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
                     sx: { fontSize: "14px" },
                   }}
                 />
-                {selectTab===0&&<TextField
-                  size="small"
-                  fullWidth
-                  required
-                  value={amountSell}
-                  onChange={(e) => handlerAmountSell(e)}
-                  id="outlined-required"
-                  // label="Amount"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">Amount</InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        {pair?.split("-")?.[0]}
-                      </InputAdornment>
-                    ),
-                    sx: {
-                      fontSize: "14px",
-                    },
-                  }}
-                />}
+                {selectTab === 0 && (
+                  <TextField
+                    size="small"
+                    fullWidth
+                    required
+                    value={amountSell}
+                    onChange={(e) => handlerAmountSell(e)}
+                    id="outlined-required"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">Amount</InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          {pair?.split("-")?.[0]}
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        fontSize: "14px",
+                      },
+                    }}
+                  />
+                )}
                 <Slider
                   sx={{ color: "black" }}
                   aria-label="Small steps"
-                  value={coinAmounts[pair]<amountSell?100:sliderValueSell}
+                  value={coinAmounts[pair] < amountSell ? 100 : sliderValueSell}
                   onChange={handleChangeSliderSell}
                   step={20}
                   min={0}
                   max={100}
                   valueLabelDisplay="auto"
-                  disabled={priceBuy<1}
+                  disabled={priceBuy < 1}
                   marks={true}
-
                 />
                 <TextField
                   size="small"
@@ -497,85 +567,27 @@ const Dashboard = ({currentPrice, setCurrentPrice, pair, setPair, balance, setBa
                     sx: { fontSize: "14px" },
                   }}
                 />
-                <BuyButton onClick={()=>buyHandlerBtn('sell')} disabled={coinAmounts[pair] < amountSell || priceSell<1 || sellTotal<1 }>Sell</BuyButton>
+                <BuyButton
+                  onClick={() => buyHandlerBtn("sell")}
+                  disabled={
+                    coinAmounts[pair] < amountSell ||
+                    priceSell < 1 ||
+                    sellTotal < 1
+                  }
+                >
+                  Sell
+                </BuyButton>
               </TextFieldWrapper>
             </Wrapper>
           </Card>
         </RightWrapper>
       </Container>
-      {/* <Box
-        sx={{
-          display: "flex",
-          gap: "20px",
-          paddingLeft: "20px",
-          borderTop: "1px solid #ccc",
-          padding: "18px",
-        }}
-      >
-        <Btn sx={{ background: "#1976d209" }}>Order History</Btn>
-      </Box>
-      <Box  sx={{
-          mb:'32px'
-        }}>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-            <TableHead>
-              <TableRow>
-              <TableCell sx={{ fontWeight: 600 ,color: "gray" }}>
-                  ID
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 ,color: "gray"}}  align="right">
-                  Pair
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600,  color: "gray"}}  align="right">
-                  Side
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 ,color: "gray" }} align="right">
-                  Type
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600,  color: "gray"}}  align="right">
-                  Date
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 ,color: "gray" }} align="right">
-                  Price
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: "gray" }} align="right">
-                  Amount
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: "gray" }} align="right">
-                  Total
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, color: "gray" }} align="right">
-                  Status
-                </TableCell><TableCell sx={{ fontWeight: 600, color: "gray" }} align="right">
-                  Action
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {orderOpenList?.map((_,i) => (
-                <TableRow
-                  key={i}
-                  sx={{"&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell component="th" scope="row">
-                  {orderOpenList[orderOpenList?.length-i-1].id}
-                  </TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].pair}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].side}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].type}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].date}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].price}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].amount?.toFixed(7)}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].total?.toFixed(5)}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].status}</TableCell>
-                  <TableCell align="right">{orderOpenList[orderOpenList?.length-i-1].action?<Btn onClick={()=>handleCancle(orderOpenList[orderOpenList?.length-i-1]?.id,orderOpenList?.length-i-1)} sx={{bgcolor:"#dd0000" ,color:'#fff',"&:hover":{bgcolor:"#dd0000cc"}}}>Cancel</Btn>:"None"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box> */}
+      <HistoryTable
+        title={"Order History"}
+        tableHeading={tableHeading}
+        data={orderOpenList}
+        handleCancle={handleCancle}
+      />
     </>
   );
 };
